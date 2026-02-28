@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:16
     container_name: postgres
-    environments:
+    environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: ecommerce
