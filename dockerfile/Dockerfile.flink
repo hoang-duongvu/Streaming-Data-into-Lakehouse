@@ -1,0 +1,14 @@
+FROM flink:1.17.1-scala_2.12
+
+# cài đặt Python và tạo symbolic link
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    ln -s /usr/bin/python3 /usr/bin/python  # Quan trọng: tạo liên kết python
+
+RUN pip3 install apache-flink==1.17.1
+
+# kafka connector
+RUN wget -P /opt/flink/lib/ https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka/1.17.1/flink-sql-connector-kafka-1.17.1.jar
+
+# đặt biến môi trường mặc định cho PyFlink
+ENV PYFLINK_PYTHON=/usr/bin/python
