@@ -1,4 +1,10 @@
-# Building-Streaming-Lakehouse
+# Building Streaming Data Pipeline with Data Lakehouse
 
-## Kiến trúc hệ thống
-![ELT Pipeline](./image/lakehouse_architecture.png)
+## High-Level System Architecture
+![System Architecture](./image/architecture.png)
+
+## End-to-End Data Flow Pipeline
+![Data Flow Pipeline](./image/data-flow.png)
+
+## Data Transformation Logic
+![Data Transformation Logic](./image/data-transformation.png)
