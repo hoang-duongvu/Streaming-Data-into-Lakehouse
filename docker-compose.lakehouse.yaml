@@ -9,7 +9,8 @@ services:
     ports:
       - '9000:9000' # S3 API
       - '9001:9001' # Web UI
-    command: server /data --console-address ":9001"
+    entrypoint: >
+      /bin/sh -c " minio server /data --console-address ':9001' & sleep 5; mc alias set batman http://localhost:9000 admin admin123; mc mb batman/lakehouse; tail -f /dev/null"
 
   # Catalog
   nessie:
@@ -17,4 +18,4 @@ services:
     container_name: nessie
     ports:
       - "19120:19120" # Web UI
-      - "19000:9000"  # REST API
+      - "19000:9000" # REST API
