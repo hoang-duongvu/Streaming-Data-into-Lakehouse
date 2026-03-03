@@ -42,6 +42,14 @@ services:
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
     ports:
       - '29094:9094'
+  k-sr:
+    image: confluentinc/cp-schema-registry:7.5.10
+    container_name: k-sr
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: 'k-01:9092,k-02:9092'
+      SCHEMA_REGISTRY_HOST_NAME: k-sr
+    ports:
+      - '28081:8081' # port 18081 belongs to Flink Job Manager container
   k-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: k-ui
