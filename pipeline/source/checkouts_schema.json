@@ -1,0 +1,16 @@
+{
+    "type": "record",
+    "name": "Checkout",
+    "fields": [
+        { "name": "checkout_id",      "type": "string" },
+        { "name": "user_id",          "type": "string" },
+        { "name": "product_id",       "type": "string" },
+        { "name": "payment_method",   "type": "string" },
+        { "name": "total_amount",     "type": "string" },
+        { "name": "shipping_address", "type": "string" },
+        { "name": "billing_address",  "type": "string" },
+        { "name": "user_agent",       "type": "string" },
+        { "name": "ip_address",       "type": "string" },
+        { "name": "event_time",       "type": "double" }
+    ]
+}

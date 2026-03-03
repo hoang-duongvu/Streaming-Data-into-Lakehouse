@@ -1,0 +1,14 @@
+{
+    "type": "record",
+    "name": "Click",
+    "namespace": "com.s2lh.clicks",
+    "fields": [
+        { "name": "click_id", "type": "string" },
+        { "name": "user_id", "type": "string" },
+        { "name": "product_id", "type": "string" },
+        { "name": "url", "type": "string" },
+        { "name": "user_agent", "type": "string" },
+        { "name": "ip", "type": "string" },
+        { "name": "event_time", "type": "double" }
+    ]
+}
