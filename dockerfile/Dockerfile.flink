@@ -1,14 +1,18 @@
-FROM flink:1.17.1-scala_2.12
+FROM flink:1.20.3-java17
 
 # cài đặt Python và tạo symbolic link
 RUN apt-get update && \
     apt-get install -y python3 python3-pip && \
-    ln -s /usr/bin/python3 /usr/bin/python  # Quan trọng: tạo liên kết python
+    ln -s /usr/bin/python3 /usr/bin/python
 
-RUN pip3 install apache-flink==1.17.1
+RUN pip3 install apache-flink==1.20.3
 
-# kafka connector
-RUN wget -P /opt/flink/lib/ https://repo.maven.apache.org/maven2/org/apache/flink/flink-sql-connector-kafka/1.17.1/flink-sql-connector-kafka-1.17.1.jar
-
+RUN wget -P /opt/flink/lib/ https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/4.0.1-2.0/flink-sql-connector-kafka-4.0.1-2.0.jar
+RUN wget -P /opt/flink/lib/ https://repo1.maven.org/maven2/org/apache/flink/flink-avro-confluent-registry/1.20.3/flink-avro-confluent-registry-1.20.3.jar
+RUN wget -P /opt/flink/lib/ https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-flink-runtime-1.20/1.9.2/iceberg-flink-runtime-1.20-1.9.2.jar
+RUN wget -P /opt/flink/lib/ https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.6/hadoop-aws-3.3.6.jar
+RUN wget -P /opt/flink/lib/ https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-common/3.3.6/hadoop-common-3.3.6.jar
+RUN wget -P /opt/flink/lib/ https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.797/aws-java-sdk-bundle-1.12.797.jar
+    
 # đặt biến môi trường mặc định cho PyFlink
 ENV PYFLINK_PYTHON=/usr/bin/python
