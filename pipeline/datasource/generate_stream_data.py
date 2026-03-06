@@ -13,7 +13,7 @@ def generate_click_event(faker: Faker, users_df: list, products_df: list):
         "click_id": str(uuid.uuid4()),
         "user_id": random.choice(users_df),
         "product_id": random.choice(products_df),
-        "url": faker.url(),
+        "product_url": faker.url(),
         "user_agent": faker.user_agent(),
         "ip": faker.ipv4(),
         "event_time": time()
@@ -43,6 +43,7 @@ def push_to_kafka(message: dict, topic_name: str, producer: SerializingProducer)
     print(f"{topic_name.upper()}: Pushing ...")
     producer.produce(
         topic=topic_name,
+        key=message["user_id"],
         value=message,
         on_delivery=delivery_callback
     )

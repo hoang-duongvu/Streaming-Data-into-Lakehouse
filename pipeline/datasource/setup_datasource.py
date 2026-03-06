@@ -1,7 +1,7 @@
 from faker import Faker
 from sqlalchemy import create_engine
-from pipeline.source.generate_static_data import generate_user_table, generate_product_table
-from pipeline.source.generate_stream_data import (
+from pipeline.datasource.generate_static_data import generate_user_table, generate_product_table
+from pipeline.datasource.generate_stream_data import (
     generate_click_event,
     generate_checkout_event,
     push_to_kafka,
@@ -14,9 +14,9 @@ def main():
     faker = Faker()
     clicks_producer, checkouts_producer = get_kafka_avro_producer()
     engine = create_engine("postgresql+psycopg://admin:admin@localhost:5433/ecommerce")
-    num_users = 100
-    num_products = 50
-    num_clicks = 1000000
+    num_users = 5
+    num_products = 5
+    num_clicks = 1000
 
     print("==== Generating static data in Postgres ====")
 
