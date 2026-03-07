@@ -1,4 +1,4 @@
-CREATE TABLE postgres_user (
+CREATE TABLE postgres_users (
     `user_id` STRING,
     `username` STRING,
     `password` STRING
