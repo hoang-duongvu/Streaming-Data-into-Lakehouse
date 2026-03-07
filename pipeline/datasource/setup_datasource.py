@@ -8,6 +8,7 @@ from pipeline.datasource.generate_stream_data import (
     get_kafka_avro_producer,
 )
 import random
+from time import time
 
 
 def main():
@@ -17,6 +18,7 @@ def main():
     num_users = 5
     num_products = 5
     num_clicks = 1000
+    curr = time()
 
     print("==== Generating static data in Postgres ====")
 
@@ -27,14 +29,18 @@ def main():
 
     for i in range(num_clicks):
         print(f"Iteration {i}")
-        click_event = generate_click_event(faker, users_id, products_id)
+        click_event = generate_click_event(faker, users_id, products_id, curr)
         push_to_kafka(click_event, "clicks", clicks_producer)
+        curr = curr + random.randint(0, 10)
 
         if random.random() > 0.5:
-            click_event = generate_click_event(faker, users_id, products_id)
+            click_event = generate_click_event(faker, users_id, products_id, curr)
             push_to_kafka(click_event, "clicks", clicks_producer)
-            checkout_event = generate_checkout_event(faker, click_event)
+            curr = curr + random.randint(0, 10)
+
+            checkout_event = generate_checkout_event(faker, click_event, curr)
             push_to_kafka(checkout_event, "checkouts", checkouts_producer)
+            curr = curr + random.randint(0, 10)
 
     clicks_producer.flush()
     checkouts_producer.flush()
