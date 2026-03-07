@@ -14,6 +14,9 @@ enrich:
 stream_join:
 	docker exec flink-jobmanager flink run -py ./flink_jobs/jobs/stream_join_job.py
 
+window_agg:
+	docker exec flink-jobmanager flink run -py ./flink_jobs/jobs/window_agg_job.py	
+
 down:
 	docker compose -f docker-compose.flink.yaml down -v
 	docker compose -f docker-compose.kafka.yaml down -v
