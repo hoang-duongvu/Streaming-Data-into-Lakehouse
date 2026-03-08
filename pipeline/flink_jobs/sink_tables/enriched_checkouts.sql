@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS enriched_checkouts (
+    `checkout_id`      STRING,
+    `user_id`          STRING,
+    `product_id`       STRING,
+    `payment_method`   STRING,
+    `total_amount`     STRING,
+    `shipping_address` STRING,
+    `billing_address`  STRING,
+    `user_agent`       STRING,
+    `ip_address`       STRING,
+    `event_time`       DOUBLE,
+    `enqueued_at` TIMESTAMP_LTZ(3),
+    `partition_id` BIGINT,
+    `offset` BIGINT,
+    `topic_id` STRING,
+    `proc_time` TIMESTAMP_LTZ(3),
+    `product_name` STRING,
+    `description` STRING,
+    `price` STRING
+);

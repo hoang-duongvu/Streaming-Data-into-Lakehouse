@@ -8,18 +8,18 @@ from confluent_kafka.schema_registry import SchemaRegistryClient
 from confluent_kafka.serialization import StringSerializer
 from pathlib import Path
 
-def generate_click_event(faker: Faker, users_df: list, products_df: list):
+def generate_click_event(faker: Faker, users_df: list, products_df: list, curr):
     return {
         "click_id": str(uuid.uuid4()),
         "user_id": random.choice(users_df),
         "product_id": random.choice(products_df),
-        "url": faker.url(),
+        "product_url": faker.url(),
         "user_agent": faker.user_agent(),
         "ip": faker.ipv4(),
-        "event_time": time()
+        "event_time": curr
     }
 
-def generate_checkout_event(faker: Faker, click_event: dict):
+def generate_checkout_event(faker: Faker, click_event: dict, curr):
     return {
         "checkout_id":     str(uuid.uuid4()),
         "user_id":         click_event["user_id"],
@@ -30,7 +30,7 @@ def generate_checkout_event(faker: Faker, click_event: dict):
         "billing_address": faker.address(),
         "user_agent":      faker.user_agent(),
         "ip_address":      faker.ipv4(),
-        "event_time":      time()
+        "event_time":      curr
     }
 
 def delivery_callback(err, msg):
@@ -43,6 +43,7 @@ def push_to_kafka(message: dict, topic_name: str, producer: SerializingProducer)
     print(f"{topic_name.upper()}: Pushing ...")
     producer.produce(
         topic=topic_name,
+        key=message["user_id"],
         value=message,
         on_delivery=delivery_callback
     )
