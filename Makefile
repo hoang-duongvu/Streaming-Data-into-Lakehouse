@@ -17,6 +17,9 @@ stream_join:
 window_agg:
 	docker exec flink-jobmanager flink run -py ./flink_jobs/jobs/window_agg_job.py	
 
+session_agg:
+	docker exec flink-jobmanager flink run -py ./flink_jobs/jobs/session_agg_job.py	
+
 down:
 	docker compose -f docker-compose.flink.yaml down -v
 	docker compose -f docker-compose.kafka.yaml down -v

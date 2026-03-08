@@ -1,6 +1,7 @@
 from pyflink.datastream import StreamExecutionEnvironment
 from pyflink.table import StreamTableEnvironment, TableDescriptor, Schema, DataTypes
-from pyflink.table.expressions import col, lit
+from pyflink.table.expressions import col, lit, if_then_else
+from pyflink.table.window import Session
 
 env = StreamExecutionEnvironment.get_execution_environment()
 env.enable_checkpointing(10000)
@@ -75,62 +76,75 @@ t_env.create_temporary_table("kafka_clicks", clicks_descriptor)
 t_env.create_temporary_table("kafka_checkouts", checkouts_descriptor)
 
 clicks = t_env.from_path("kafka_clicks")
-
 checkouts = t_env.from_path("kafka_checkouts")
 
-clicks_columns = clicks.get_schema().get_field_names()
-checkouts_columns = checkouts.get_schema().get_field_names()
+clicks_selected = clicks.select(
+    col("user_id"), 
+    lit("click").alias("activity_type"),
+    col("click_id").alias("activity_id"),
+    col("event_ts").alias("activity_ts")
+)
 
-clicks = clicks.rename_columns(*[col(name).alias(f"click_{name}") for name in clicks_columns])
-checkouts = checkouts.rename_columns(*[col(name).alias(f"checkout_{name}") for name in checkouts_columns])
+checkouts_selected = checkouts.select(
+    col("user_id"), 
+    lit("checkout").alias("activity_type"),
+    col("checkout_id").alias("activity_id"),
+    col("event_ts").alias("activity_ts")
+)
 
-checkouts_clicks = checkouts \
-    .left_outer_join(
-        clicks, 
-        clicks.click_user_id == checkouts.checkout_user_id) \
-    .where(
-        (clicks.click_event_ts >= checkouts.checkout_event_ts - lit(1).hours) & 
-        (clicks.click_event_ts <= checkouts.checkout_event_ts)) \
+# Intermediate Table
+all_activities = clicks_selected.union_all(checkouts_selected)
+
+# Final Table
+session_activities = all_activities \
+    .window(
+        Session \
+            .with_gap(lit(10).seconds) \
+            .on(col("activity_ts")) \
+            .alias("w")
+    ) \
+    .group_by(
+        col("w"),
+        col("user_id")
+    ) \
     .select(
-        checkouts.checkout_user_id.alias("user_id"),
-        checkouts.checkout_checkout_id.alias("checkout_id"),
-        checkouts.checkout_event_time.alias("checkout_time"),
-        checkouts.checkout_product_id.alias("checkout_product_id"),
-        clicks.click_click_id.alias("click_id"),
-        clicks.click_event_time.alias("click_time"),
-        clicks.click_product_id.alias("click_product_id")
-    )
+        col("user_id"),
+        col("w").start.alias("session_start"),
+        col("w").end.alias("session_end"),
+        if_then_else(col("activity_type") == "checkout", 1, 0).sum.alias("num_checkouts"),
+        if_then_else(col("activity_type") == "checkout", col("activity_id"), "null").list_agg(",").alias("list_checkouts"),
+        if_then_else(col("activity_type") == "click", 1, 0).sum.alias("num_clicks"),
+        if_then_else(col("activity_type") == "click", col("activity_id"), "null").list_agg(",").alias("list_clicks"))
+    
 
 # Sink
-# t_env.execute_sql('''USE CATALOG nessie_catalog;''')
-t_env.execute_sql('''CREATE DATABASE IF NOT EXISTS stream_join_db;''')
-t_env.execute_sql('''USE stream_join_db;''')
-
-checkouts_clicks_schema = Schema.new_builder() \
+session_sink_schema = Schema.new_builder() \
     .column("user_id", DataTypes.STRING()) \
-    .column("checkout_id", DataTypes.STRING()) \
-    .column("checkout_time", DataTypes.DOUBLE()) \
-    .column("checkout_product_id", DataTypes.STRING()) \
-    .column("click_id", DataTypes.STRING()) \
-    .column("click_time", DataTypes.DOUBLE()) \
-    .column("click_product_id", DataTypes.STRING()) \
+    .column("session_start", DataTypes.TIMESTAMP(3)) \
+    .column("session_end", DataTypes.TIMESTAMP(3)) \
+    .column("num_checkouts", DataTypes.BIGINT()) \
+    .column("list_checkouts", DataTypes.STRING()) \
+    .column("num_clicks", DataTypes.BIGINT()) \
+    .column("list_clicks", DataTypes.STRING()) \
     .build()
 
-iceberg_sink = TableDescriptor.for_connector('iceberg') \
-    .schema(checkouts_clicks_schema) \
+iceberg_sink = TableDescriptor.for_connector("iceberg") \
+    .schema(session_sink_schema) \
     .option("catalog-name", "nessie_catalog") \
     .option("catalog-impl", "org.apache.iceberg.nessie.NessieCatalog") \
     .option("uri", "http://nessie:19120/api/v1") \
-    .option("ref"                 , "main") \
-    .option("warehouse"           , "s3://lakehouse") \
+    .option("ref", "main") \
+    .option("warehouse", "s3://lakehouse") \
     .option("io-impl"             , "org.apache.iceberg.aws.s3.S3FileIO") \
-    .option("s3.endpoint"         , "http://minio:9000") \
-    .option("s3.access-key-id"    , "admin") \
+    .option("s3.endpoint", "http://minio:9000") \
+    .option("s3.access-key-id", "admin") \
     .option("s3.secret-access-key", "admin123") \
     .option("s3.path-style-access", "true") \
-    .option("client.region"       , "us-east-1") \
+    .option("client.region", "us-east-1") \
     .build()
 
-t_env.create_table("checkouts_clicks", iceberg_sink)
 
-checkouts_clicks.execute_insert("checkouts_clicks")
+t_env.execute_sql('''CREATE DATABASE IF NOT EXISTS session_activities;''')
+t_env.execute_sql('''USE session_activities;''')
+t_env.create_table("session_activities", iceberg_sink)
+session_activities.execute_insert("session_activities")
