@@ -83,5 +83,5 @@ iceberg_sink = TableDescriptor.for_connector('iceberg') \
     .option("client.region"       , "us-east-1") \
     .build()
 
-t_env.create_table("clicks_5min", iceberg_sink)
-clicks_5m.execute_insert("clicks_5min")
+t_env.create_table("products_clicks_5min", iceberg_sink)
+clicks_5m.execute_insert("products_clicks_5min")

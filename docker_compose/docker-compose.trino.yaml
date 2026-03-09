@@ -5,9 +5,9 @@ services:
     ports:
       - '28080:8080'
     volumes:
-      - ./trino/coordinator/config.properties:/etc/trino/config.properties
-      - ./trino/coordinator/init.sql:/etc/trino/init.sql
-      - ./trino/catalog:/etc/trino/catalog
+      - ../trino/coordinator/config.properties:/etc/trino/config.properties
+      - ../trino/coordinator/init.sql:/etc/trino/init.sql
+      - ../trino/catalog:/etc/trino/catalog
 
   trino-worker:
     image: trinodb/trino:478
@@ -15,5 +15,5 @@ services:
     depends_on:
       - trino-coordinator
     volumes:
-      - ./trino/worker/config.properties:/etc/trino/config.properties
-      - ./trino/catalog:/etc/trino/catalog
+      - ../trino/worker/config.properties:/etc/trino/config.properties
+      - ../trino/catalog:/etc/trino/catalog
